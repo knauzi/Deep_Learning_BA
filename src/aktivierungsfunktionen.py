@@ -8,12 +8,12 @@ class Sigmoid:
 
     @staticmethod
     def forward(X):
-        """ f(x) """
-        return 1 / (1 + np.exp(-X))
+        """ f(X) """
+        return 1. / (1. + np.exp(-X))
 
     @staticmethod
     def backward(X):
-        """ f'(x) """
+        """ f'(X) """
         return Sigmoid.forward(X) * (1 - Sigmoid.forward(X))
 
 
@@ -30,7 +30,15 @@ class Relu:
 
     @staticmethod
     def backward(X):
-        """ f'(x) """
+        """ f'(X) """
         X[X < 0] = 0
         X[X > 0] = 1
         return X
+
+
+class Softmax:
+    """
+        Klasse, die die Softmax-Aktivierungsfunktion implementiert
+    """
+
+    pass

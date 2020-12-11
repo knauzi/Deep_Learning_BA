@@ -1,21 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from initialisierung import initialize_parameters
-from aktivierungsfunktionen import Sigmoid, Relu
-from kostenfunktionen import MSE, BCE
+from .initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform
+from .aktivierungsfunktionen import Sigmoid, Relu
+from .kostenfunktionen import MSE, BCE
 
 
 class ANN:
     """ Klasse, die ein künstliches neuronales Netz implementiert. """
 
-    def __init__(self, layer_dims, activations):
+    def __init__(self, layer_dims, activations, initialisation="random_normal"):
         """
             Initialisierung des neuronalen Netzes
 
             Args:
                 layer_dims: Liste mit Dimensionen aller Schichten der Länge n_layers 
                 activations: Liste mit nicht-linearen Aktivierungsfunktionen aller Schichten
+                initialisation: String mit anzuwendender Initialisierungsmethode
 
             Beispiel:
                 - 4 Inputs
@@ -30,7 +31,14 @@ class ANN:
 
         self.n_layers = len(layer_dims)
         self.layer_dims = layer_dims
-        self.parameters = initialize_parameters(layer_dims)
+
+        # initialisiere Parameter nach der vorgegebenen Methode
+        if initialisation == "random_normal":
+            self.parameters = init_random_normal(layer_dims)
+        elif initialisation == "xavier":
+            self.parameters = init_xavier_uniform(layer_dims)
+        elif initialisation == "he":
+            self.parameters = init_he_uniform(layer_dims)
 
         # speichere Aktivierungsfunktionen passend zur Nummerierung der Schichten
         self.activations = {}
