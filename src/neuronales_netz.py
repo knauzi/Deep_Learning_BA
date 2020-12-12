@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform
-from .aktivierungsfunktionen import Sigmoid, Relu
+from .initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform, init_zeros
+from .aktivierungsfunktionen import Sigmoid, Relu, Softmax
 from .kostenfunktionen import MSE, BCE
 
 
@@ -39,6 +39,8 @@ class ANN:
             self.parameters = init_xavier_uniform(layer_dims)
         elif initialisation == "he":
             self.parameters = init_he_uniform(layer_dims)
+        elif initialisation == "zero":
+            self.parameters = init_zeros(layer_dims)
         else:
             raise AttributeError("Unbekannte Initialisierungsmethode übergeben!")
 

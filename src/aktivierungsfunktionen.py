@@ -62,4 +62,5 @@ class Softmax:
             ds_list.append(dx)
 
         dS = np.stack(tuple(ds_list), axis=0)
+        dS = np.squeeze(dS)
         return dS

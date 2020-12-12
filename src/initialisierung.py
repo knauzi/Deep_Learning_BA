@@ -75,3 +75,27 @@ def init_he_uniform(layer_dims):
         parameters['b' + str(l + 1)] = np.zeros((layer_dims[l], 1))
 
     return parameters
+
+
+def init_zeros(layer_dims):
+    """
+        Initialisierung der Gewichte und Verzerrungen mit Null
+        Nummerierung: 2,...,L
+
+        Args:
+            layer_dims: Liste mit Dimensionen aller Schichten
+
+        Returns:
+            paramters: Python Dictionary mit allen initialsierten Parametern
+                       W2, b2, ..., WL, bL
+    """
+
+    parameters = {}
+    L = len(layer_dims)
+
+    for l in range(1, L):
+        limit = np.sqrt(6. / layer_dims[l])
+        parameters['W' + str(l + 1)] = np.zeros((layer_dims[l], layer_dims[l-1]))
+        parameters['b' + str(l + 1)] = np.zeros((layer_dims[l], 1))
+
+    return parameters
