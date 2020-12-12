@@ -39,11 +39,13 @@ class ANN:
             self.parameters = init_xavier_uniform(layer_dims)
         elif initialisation == "he":
             self.parameters = init_he_uniform(layer_dims)
+        else:
+            raise AttributeError("Unbekannte Initialisierungsmethode übergeben!")
 
         # speichere Aktivierungsfunktionen passend zur Nummerierung der Schichten
         self.activations = {}
         for l in range(self.n_layers - 1):
-            self.activations[l + 2] = activations[l]
+            self.activations[l+2] = activations[l]
 
         # als Parameter der Funktion "train" übergeben
         self.cost_function = None
@@ -68,10 +70,10 @@ class ANN:
         for l in range(1, self.n_layers):
 
             # linearer Anteil der aktuellen Schicht (Formel: Z = W * A + b)
-            Z[l + 1] = np.dot(self.parameters["W" + str(l+1)], A[l]) + self.parameters["b" + str(l+1)]
+            Z[l+1] = np.dot(self.parameters["W"+str(l+1)], A[l]) + self.parameters["b"+str(l+1)]
 
             # nicht-linearer Anteil der aktuelle Schicht (Formel: A = sigma(Z))
-            A[l + 1] = self.activations[l + 1].forward(Z[l + 1])
+            A[l+1] = self.activations[l+1].forward(Z[l+1])
 
         return Z, A
 
@@ -94,11 +96,12 @@ class ANN:
 
         # Fehler aller restlichen Schichten
         for l in reversed(range(2, self.n_layers)):
-            delta[l] = self.activations[l].backward(Z[l]) * np.dot(self.parameters["W"+str(l+1)].T, delta[l+1])
+            delta[l] = self.activations[l].backward(Z[l]) * \
+                       np.dot(self.parameters["W"+str(l+1)].T, delta[l+1])
 
         return delta
 
-    def update_parameters(self, delta, A):
+    def _update_parameters(self, delta, A):
         """
             Aktualisierung aller Parameter mittels der berechneten Fehler in jeder Schicht (delta)
 
@@ -142,7 +145,7 @@ class ANN:
             y = Y[:, [k]]
             Z, A = self._forward_propagation(x)
             delta = self._backward_propagation(Z, A, y)
-            self.update_parameters(delta, A)
+            self._update_parameters(delta, A)
 
             # Berechne die Kosten über alle Daten mit den aktualisierten Parametern und gib diese
             # auf der Konsole aus, wenn print_cost=true

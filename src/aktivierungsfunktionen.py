@@ -41,4 +41,25 @@ class Softmax:
         Klasse, die die Softmax-Aktivierungsfunktion implementiert
     """
 
-    pass
+    @staticmethod
+    def forward(X):
+        """ f(X) """
+        counter = np.exp(X)
+        denominator = np.sum(counter, axis=0)
+        return np.divide(counter, denominator)
+
+    @staticmethod
+    def backward(X):
+        """ f'(X) """
+        S = Softmax.forward(X)
+
+        ds_list = []
+        for i in range(X.shape[1]):
+            s = S[:, [i]]
+            diagonal = np.diag(s.flatten())
+            tmp_matrix = np.tile(s, s.shape[0])
+            dx = diagonal - np.multiply(tmp_matrix, np.transpose(tmp_matrix))
+            ds_list.append(dx)
+
+        dS = np.stack(tuple(ds_list), axis=0)
+        return dS
