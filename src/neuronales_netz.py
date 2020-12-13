@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import trange
 
-from .initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform, init_zeros
-from .aktivierungsfunktionen import Sigmoid, Relu, Softmax
-from .kostenfunktionen import MSE, BCE
+from src.initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform, init_zeros
+from src.aktivierungsfunktionen import Sigmoid, Relu, Softmax
+from src.kostenfunktionen import QK, BKE, KE
+from src.utils import get_one_hot
 
 
 class ANN:
@@ -92,9 +94,19 @@ class ANN:
                 delta: Fehler in jeder Schicht (Nummerierung wie im Beispiel oben)
         """
 
+        delta = {}
+
         # Fehler in der Output-Schicht
-        delta = {self.n_layers: self.cost_function.prime(A[self.n_layers], Y) *
-                                self.activations[self.n_layers].backward(Z[self.n_layers])}
+        # 1. Fall: quadratische Kostenfunktion
+        if self.cost_function == QK:
+            if self.activations[self.n_layers] == Softmax:
+                pass
+            else:
+                delta = {self.n_layers: self.cost_function.prime(A[self.n_layers], Y) *
+                                        self.activations[self.n_layers].backward(Z[self.n_layers])}
+        # 2. Fall: (binäre) Kreuzentropie-Kostenfunktion (vgl. Kapitel Backpropagation)
+        else:
+            delta = {self.n_layers: A[self.n_layers] - Y}
 
         # Fehler aller restlichen Schichten
         for l in reversed(range(2, self.n_layers)):
@@ -119,7 +131,7 @@ class ANN:
             self.parameters["b"+str(l)] = self.parameters["b"+str(l)] - \
                                           self.learning_rate * np.mean(delta[l], axis=0, keepdims=True)
 
-    def train_stochastic(self, X, Y, cost_function, learning_rate, n_iter, print_cost=False):
+    def train_stochastic(self, X, Y, cost_function, learning_rate, n_iter, print_history=False):
         """
             Trainierung des neuronale Netzes auf den gegebenen Daten mittles des stochastischen
             Gradientverfahrens
@@ -130,7 +142,7 @@ class ANN:
                 cost_function: Kostenfunktion
                 learning_rate: Lernrate
                 n_iter: Anzahl an Iterationen
-                print_cost: (boolean) Sollen die Kosten in der Konsole ausgegeben werden?: JA/NEIN
+                print_history: (boolean) Sollen die Statistiken in der Konsole ausgegeben werden?: JA/NEIN
 
             Returns:
                 costs: Liste mit Kosten im Verlauf des Trainings (leer, wenn plot_cost False ist)
@@ -139,27 +151,42 @@ class ANN:
         self.learning_rate = learning_rate
         self.cost_function = cost_function
         costs = []
+        accuracies = []
+        n_classes = X.shape[0]
         n_examples = X.shape[1]
 
-        for i in range(n_iter):
+        for i in (t := trange(n_iter)):
             k = np.random.randint(n_examples)
             x = X[:, [k]]
             y = Y[:, [k]]
             Z, A = self._forward_propagation(x)
             delta = self._backward_propagation(Z, A, y)
+            predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
+            predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
             self._update_parameters(delta, A)
 
-            # Berechne die Kosten über alle Daten mit den aktualisierten Parametern und gib diese
-            # auf der Konsole aus, wenn print_cost=true
-            # TODO ändere zu history und speicher noch andere Daten zum Training
+            # Berechne die Kosten und Genauigkeit über alle Daten mit den aktualisierten Parametern
+            # und gib diese auf der Konsole aus, wenn print_history=true
             if (i % 100) == 0:
                 _, A = self._forward_propagation(X)
+
+                # Kosten
                 cost = self.cost_function.compute(A[self.n_layers], Y)
                 costs.append(cost)
-                if print_cost:
-                    print("Kosten nach Iteration {}: {}".format(i, cost))
 
-        return costs
+                # Genauigkeit
+                predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
+                accuracy = np.sum(np.array([np.array_equal(Y[:, j], predictions[:, j])
+                                            for j in range(n_examples)])) / n_examples
+                accuracies.append(accuracy)
+
+                if print_history:
+                    t.set_description("Kosten: {:0.2f}; Genauigkeit: {:0.2f}".format(cost, accuracy))
+
+        history = {"Kosten": costs,
+                   "Genauigkeit": accuracies}
+
+        return history
 
     def save(self, output_path):
         pass
@@ -175,13 +202,14 @@ if __name__ == "__main__":
 
     # Neuronales Netz
     learning_rate = 0.05
-    n_iter = 1000000
-    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Sigmoid))
-    costs = nn.train_stochastic(X_train, Y_train, MSE, learning_rate, n_iter, print_cost=False)
+    n_iter = 30000
+    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Softmax), initialisation="xavier")
+    history = nn.train_stochastic(X_train, Y_train, KE, learning_rate, n_iter, print_history=True)
 
     # plotte Kosten im Trainingsverlauf
     iter_numbers = np.arange(0, n_iter, 100)
-    plt.plot(iter_numbers, costs)
-    plt.xlabel("Iter Number")
-    plt.ylabel("Cost")
+    plt.plot(iter_numbers, history["Kosten"])
+    plt.plot(iter_numbers, history["Genauigkeit"])
+    plt.xlabel("Durchlauf")
+    plt.ylabel("Kosten / Genauigkeit")
     plt.show()
