@@ -94,19 +94,24 @@ class ANN:
                 delta: Fehler in jeder Schicht (Nummerierung wie im Beispiel oben)
         """
 
-        delta = {}
-
-        # Fehler in der Output-Schicht
-        # 1. Fall: quadratische Kostenfunktion
-        if self.cost_function == QK:
-            if self.activations[self.n_layers] == Softmax:
-                pass
-            else:
-                delta = {self.n_layers: self.cost_function.prime(A[self.n_layers], Y) *
-                                        self.activations[self.n_layers].backward(Z[self.n_layers])}
-        # 2. Fall: (binäre) Kreuzentropie-Kostenfunktion (vgl. Kapitel Backpropagation)
+        # TODO Skalierung der Kostenfunktion an Arbeit anpassen
+        # Fehler in der Output-Schicht (vgl. Kapitel Backpropagation)
+        AL = A[self.n_layers]
+        deltaL = None
+        # 1. Fall: quadratische Kostenfunktion und Sigmoid-Aktivierungsfunktion
+        if self.cost_function == QK and self.activations[self.n_layers] == Sigmoid:
+            deltaL = (AL - Y) * self.activations[self.n_layers].backward(Z[self.n_layers])
+        # 2. Fall: binäre Kreuzentropie-Kostenfunktion und Sigmoid-Aktivierungsfunktion
+        elif self.cost_function == BKE and self.activations[self.n_layers] == Sigmoid:
+            deltaL = AL - Y
+        # 3. Fall: Kreuzentropie-Kostenfunktion und Softmax-Aktivierungsfunktion
+        elif self.cost_function == KE and self.activations[self.n_layers] == Softmax:
+            deltaL = AL - Y
         else:
-            delta = {self.n_layers: A[self.n_layers] - Y}
+            raise Exception("Unbekannte Kombination von Kostenfunktion und Aktivierungsfunktion in der"
+                            " Ausgabe-Schicht!")
+
+        delta = {self.n_layers: deltaL}
 
         # Fehler aller restlichen Schichten
         for l in reversed(range(2, self.n_layers)):
@@ -124,25 +129,25 @@ class ANN:
                 A: Aktivierungen aller Zwischenschichten
         """
 
-        n_examples = A[1].shape[1]  # Anzahl an Trainings-Beispielen
+        # TODO ist das mit skalieren korrekt?
         for l in reversed(range(2, self.n_layers + 1)):
             self.parameters["W"+str(l)] = self.parameters["W"+str(l)] - \
-                                          self.learning_rate * (1 / n_examples) * np.dot(delta[l], A[l-1].T)
+                                          self.learning_rate * np.dot(delta[l], A[l-1].T)
             self.parameters["b"+str(l)] = self.parameters["b"+str(l)] - \
-                                          self.learning_rate * np.mean(delta[l], axis=0, keepdims=True)
+                                          self.learning_rate * np.sum(delta[l], axis=-1, keepdims=True)
 
-    def train_stochastic(self, X, Y, cost_function, learning_rate, n_iter, print_history=False):
+    def train(self, X, Y, cost_function, learning_rate, epochs, batch_size):
         """
             Trainierung des neuronale Netzes auf den gegebenen Daten mittles des stochastischen
             Gradientverfahrens
 
             Args:
-                X: Input
-                Y: Erwarteter Output
+                X: Input, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+                Y: Erwarteter Output ({0,1}), Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
                 cost_function: Kostenfunktion
                 learning_rate: Lernrate
-                n_iter: Anzahl an Iterationen
-                print_history: (boolean) Sollen die Statistiken in der Konsole ausgegeben werden?: JA/NEIN
+                epochs: Anzahl an Iterationen
+                batch_size: Mini-Batch Größe
 
             Returns:
                 costs: Liste mit Kosten im Verlauf des Trainings (leer, wenn plot_cost False ist)
@@ -155,14 +160,13 @@ class ANN:
         n_classes = X.shape[0]
         n_examples = X.shape[1]
 
-        for i in (t := trange(n_iter)):
-            k = np.random.randint(n_examples)
-            x = X[:, [k]]
-            y = Y[:, [k]]
+        # TODO support für mini batch hinzufügen
+        for i in (t := trange(epochs)):
+            sample = np.random.randint(n_examples, size=batch_size)
+            x = X[:, sample]
+            y = Y[:, sample]
             Z, A = self._forward_propagation(x)
             delta = self._backward_propagation(Z, A, y)
-            predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
-            predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
             self._update_parameters(delta, A)
 
             # Berechne die Kosten und Genauigkeit über alle Daten mit den aktualisierten Parametern
@@ -180,8 +184,8 @@ class ANN:
                                             for j in range(n_examples)])) / n_examples
                 accuracies.append(accuracy)
 
-                if print_history:
-                    t.set_description("Kosten: {:0.2f}; Genauigkeit: {:0.2f}".format(cost, accuracy))
+                # gibt Kosten und Genauigkeit auf der Konsole aus
+                t.set_description("Kosten: {:0.2f}; Genauigkeit: {:0.2f}".format(cost, accuracy))
 
         history = {"Kosten": costs,
                    "Genauigkeit": accuracies}
@@ -201,13 +205,14 @@ if __name__ == "__main__":
                         [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
 
     # Neuronales Netz
-    learning_rate = 0.05
-    n_iter = 30000
-    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Softmax), initialisation="xavier")
-    history = nn.train_stochastic(X_train, Y_train, KE, learning_rate, n_iter, print_history=True)
+    learning_rate = 0.01
+    epochs = 50000
+    batch_size = 2
+    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Sigmoid), initialisation="xavier")
+    history = nn.train(X_train, Y_train, BKE, learning_rate, epochs, batch_size)
 
     # plotte Kosten im Trainingsverlauf
-    iter_numbers = np.arange(0, n_iter, 100)
+    iter_numbers = np.arange(0, epochs, 100)
     plt.plot(iter_numbers, history["Kosten"])
     plt.plot(iter_numbers, history["Genauigkeit"])
     plt.xlabel("Durchlauf")

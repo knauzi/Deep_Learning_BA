@@ -69,9 +69,7 @@ class BKE:
         #                    np.transpose(np.log(1 - AL)))).sum()
         # cost = np.squeeze(cost)
 
-        cost = -1. * np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), (1 - np.log(AL))))
-        print(AL.shape)
-        print(Y.shape)
+        cost = - np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), (1 - np.log(AL))))
         cost = np.squeeze(cost)
 
         return cost

@@ -18,6 +18,10 @@ from src.aktivierungsfunktionen import *
 # print(Softmax.forward(x))
 # print(np.sum(Softmax.forward(x)))
 
-a = np.eye(2)[np.array([0, 1, 1, 1, 0])]
+# a = np.eye(2)[np.array([0, 1, 1, 1, 0])]
+# print(a)
+# print(np.transpose(a))
+
+a = np.array([[1, 4], [1, 3]])
 print(a)
-print(np.transpose(a))
+print(np.sum(a, axis=-1, keepdims=True))

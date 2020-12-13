@@ -22,6 +22,9 @@ def init_random_normal(layer_dims):
         parameters['W'+str(l+1)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * scale
         parameters['b'+str(l+1)] = np.random.randn(layer_dims[l], 1) * scale
 
+        print(parameters['W' + str(l + 1)])
+        print(parameters['b' + str(l + 1)])
+
     return parameters
 
 
