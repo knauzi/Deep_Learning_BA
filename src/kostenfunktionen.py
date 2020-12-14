@@ -20,32 +20,31 @@ class QK:
                 cost: Kosten (integer)
         """
 
-        # cost = np.square(np.subtract(AL, Y)).mean()
-        cost = np.sum(np.square(np.subtract(AL, Y)))
+        cost = np.square(np.subtract(AL, Y)).mean()
+        # cost = np.sum(np.square(np.subtract(AL, Y)))
         cost = np.squeeze(cost)
 
         return cost
 
-    @staticmethod
-    def prime(AL, Y):
-        """
-            Berechnung der Ableitung der Kostenfunktion nach der Aktivierung der
-            Output-Schicht
+    # @staticmethod
+    # def prime(AL, Y):
+    #     """
+    #         Berechnung der Ableitung der Kostenfunktion nach der Aktivierung der
+    #         Output-Schicht
+    #
+    #         Args:
+    #             AL: Aktivierung der Output-Schicht, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+    #             Y: Erwarteter Output mit Werten in {0,1},
+    #                Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+    #
+    #         Returns:
+    #             prime: Ableitung der Kostenfunktion
+    #     """
+    #
+    #     prime = AL - Y
+    #     return prime
 
-            Args:
-                AL: Aktivierung der Output-Schicht, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
-                Y: Erwarteter Output mit Werten in {0,1},
-                   Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
 
-            Returns:
-                prime: Ableitung der Kostenfunktion
-        """
-
-        prime = AL - Y
-        return prime
-
-
-# TODO passt noch nicht in die Implementierung der Backpropagation
 class BKE:
     """
         Klasse, die die binäre Kreuzentropie Kostenfunktion implementiert
@@ -66,7 +65,8 @@ class BKE:
         """
 
         # m = Y.shape[1]
-        cost = - np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), np.log(1 - AL)))
+        # cost = - np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), np.log(1 - AL)))
+        cost = - np.mean(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), np.log(1 - AL)))
         cost = np.squeeze(cost)
 
         return cost
@@ -111,9 +111,8 @@ class KE:
                 cost: Kosten (integer)
         """
 
-        # m = Y.shape[1]
-        # cost = -1.0 / m * (np.dot(Y, np.transpose(np.log(AL))))
-        cost = - np.sum(np.multiply(Y, np.log(AL)))
+        # cost = - np.sum(np.multiply(Y, np.log(AL)))
+        cost = - np.mean(np.multiply(Y, np.log(AL)))
         cost = np.squeeze(cost)
 
         return cost

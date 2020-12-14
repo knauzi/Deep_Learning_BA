@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import trange
 
-from src.initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform, init_zeros
-from src.aktivierungsfunktionen import Sigmoid, Relu, Softmax
-from src.kostenfunktionen import QK, BKE, KE
-from src.utils import get_one_hot, get_accuracy, plot_decision_boundary_2d
+from src.initialisierung import *
+from src.aktivierungsfunktionen import *
+from src.kostenfunktionen import *
+from src.utils import *
 
 
 class ANN:
@@ -94,7 +94,6 @@ class ANN:
                 delta: Fehler in jeder Schicht (Nummerierung wie im Beispiel oben)
         """
 
-        # TODO Skalierung der Kostenfunktion an Arbeit anpassen
         # Fehler in der Output-Schicht (vgl. Kapitel Backpropagation)
         AL = A[self.n_layers]
         deltaL = None
@@ -103,10 +102,10 @@ class ANN:
             deltaL = (AL - Y) * self.activations[self.n_layers].backward(Z[self.n_layers])
         # 2. Fall: binäre Kreuzentropie-Kostenfunktion und Sigmoid-Aktivierungsfunktion
         elif self.cost_function == BKE and self.activations[self.n_layers] == Sigmoid:
-            deltaL = AL - Y
+            deltaL = (AL - Y)
         # 3. Fall: Kreuzentropie-Kostenfunktion und Softmax-Aktivierungsfunktion
         elif self.cost_function == KE and self.activations[self.n_layers] == Softmax:
-            deltaL = AL - Y
+            deltaL = (AL - Y)
         else:
             raise Exception("Unbekannte Kombination von Kostenfunktion und Aktivierungsfunktion in der"
                             " Ausgabe-Schicht!")
@@ -135,14 +134,18 @@ class ANN:
             self.parameters["b"+str(l)] = self.parameters["b"+str(l)] - \
                                           self.learning_rate * np.sum(delta[l], axis=-1, keepdims=True)
 
-    def train(self, X, Y, cost_function, learning_rate, epochs, batch_size):
+    def train(self, X_train, X_val, Y_train, Y_val, cost_function, learning_rate, epochs, batch_size):
         """
-            Trainierung des neuronale Netzes auf den gegebenen Daten mittles des stochastischen
+            Trainierung des neuronalen Netzes auf den gegebenen Daten mittles des stochastischen
             Gradientverfahrens
 
             Args:
-                X: Input, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
-                Y: Erwarteter Output ({0,1}), Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+                X_train: Trainingseingaben, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+                X_val: Validierungseingaben, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+                Y_train: Erwartete Trainingsausgaben ({0,1}),
+                         Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+                Y_val: Erwartete Validierungsausgaben ({0,1}),
+                       Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
                 cost_function: Kostenfunktion
                 learning_rate: Lernrate
                 epochs: Anzahl an Iterationen
@@ -154,43 +157,58 @@ class ANN:
 
         self.learning_rate = learning_rate
         self.cost_function = cost_function
-        costs = []
-        accuracies = []
-        n_classes = X.shape[0]
-        n_examples = X.shape[1]
+
+        n_classes = X_train.shape[0]
+        n_train = X_train.shape[1]
+
+        costs_train = []
+        costs_val = []
+        accuracies_train = []
+        accuracies_val = []
 
         for i in (t := trange(epochs)):
 
             # Ziehen mit Zurücklegen
-            sample = np.random.randint(n_examples, size=batch_size)
-            x = X[:, sample]
-            y = Y[:, sample]
+            # TODO Ziehen ohne Zurücklegen implementieren
+            sample = np.random.randint(n_train, size=batch_size)
+            x_train = X_train[:, sample]
+            y_train = Y_train[:, sample]
 
-            Z, A = self._forward_propagation(x)
-            delta = self._backward_propagation(Z, A, y)
+            Z, A = self._forward_propagation(x_train)
+            delta = self._backward_propagation(Z, A, y_train)
             self._update_parameters(delta, A)
 
             # Berechne die Kosten und Genauigkeit über alle Daten mit den aktualisierten Parametern
             # und gib diese auf der Konsole aus; alle 10 Epochen
-            if (i % 1000) == 0:
-                _, A = self._forward_propagation(X)
+            if (i % 10) == 0:
+                _, A_train = self._forward_propagation(X_train)
+                _, A_val = self._forward_propagation(X_val)
 
                 # Kosten
-                cost = self.cost_function.compute(A[self.n_layers], Y)
-                costs.append(cost)
+                cost_train = self.cost_function.compute(A_train[self.n_layers], Y_train)
+                cost_val = self.cost_function.compute(A_val[self.n_layers], Y_val)
+                costs_train.append(cost_train)
+                costs_val.append(cost_val)
 
                 # Genauigkeit
-                predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
-                # accuracy = np.sum(np.array([np.array_equal(Y[:, j], predictions[:, j])
-                #                             for j in range(n_examples)])) / n_examples
-                accuracy = get_accuracy(Y, predictions)
-                accuracies.append(accuracy)
+                predictions_train = get_one_hot(np.argmax(A_train[self.n_layers], axis=0), n_classes)
+                predictions_val = get_one_hot(np.argmax(A_val[self.n_layers], axis=0), n_classes)
+                accuracy_train = get_accuracy(Y_train, predictions_train)
+                accuracy_val = get_accuracy(Y_val, predictions_val)
+                accuracies_train.append(accuracy_train)
+                accuracies_val.append(accuracy_val)
 
-                # gibt Kosten und Genauigkeit auf der Konsole aus
-                t.set_description("Kosten: {:0.2f}; Genauigkeit: {:0.2f}".format(cost, accuracy))
+                # gib Kosten und Genauigkeit auf der Konsole aus
+                t.set_description("Kosten-Train: {:0.2f}; "
+                                  "Genauigkeit-Train: {:0.2f}; "
+                                  "Kosten-Val: {:0.2f}; "
+                                  "Genauigkeit-Val: {:0.2f}".format(cost_train, accuracy_train,
+                                                                    cost_val, accuracy_val))
 
-        history = {"Kosten": costs,
-                   "Genauigkeit": accuracies}
+        history = {"Kosten-Training": costs_train,
+                   "Kosten-Validierung": costs_val,
+                   "Genauigkeit-Training": accuracies_train,
+                   "Genauigkeit-Validierung": accuracies_val}
 
         return history
 
@@ -212,29 +230,3 @@ class ANN:
 
     def save(self, output_path):
         pass
-
-
-if __name__ == "__main__":
-
-    # Daten
-    X = np.array([[0.1, 0.3, 0.1, 0.6, 0.4, 0.6, 0.5, 0.9, 0.4, 0.7],
-                  [0.1, 0.4, 0.5, 0.9, 0.2, 0.3, 0.6, 0.2, 0.4, 0.6]])
-    Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
-
-    # Neuronales Netz
-    learning_rate = 0.01
-    epochs = 50000
-    batch_size = 10
-    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Sigmoid), initialisation="random_normal")
-    history = nn.train(X, Y, BKE, learning_rate, epochs, batch_size)
-
-    # plotte Kosten im Trainingsverlauf
-    plt.plot(history["Kosten"])
-    plt.plot(history["Genauigkeit"])
-    plt.xlabel("Durchlauf")
-    plt.ylabel("Kosten / Genauigkeit")
-    plt.show()
-
-    # plotte Entscheidungsgrenze
-    plot_decision_boundary_2d(nn, X, Y)

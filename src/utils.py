@@ -71,6 +71,35 @@ def plot_data_2d(X, Y, limit=None, cmap="Spectral"):
     plt.show()
 
 
+def get_train_val_split(X, Y, split=0.2):
+    """
+        Teilt die Eingaben und Ausgaben zufällig in Trainings- und Validierungsdaten auf
+
+    Args:
+        X: Eingaben, Dimension(Anzahl Ausgaben, Anzahl Datenpunkte)
+        Y: Eingaben, Dimension(Anzahl Ausgaben, Anzahl Datenpunkte)
+        split: Prozent, wie viele Datenpunkte in Validierungsdatensatz kommen
+    Returns:
+        X_train: Trainingseingaben
+        X_val: Validierungseingaben
+        Y_train: Trainingsausgaben
+        Y_val: Validierungsausgaben
+    """
+
+    n_samples = X.shape[1]
+    n_train = int((1 - split) * n_samples)
+
+    # Erzeuge Vektor mit Inidizes und mische diese
+    indices = np.arange(n_samples)
+    np.random.shuffle(indices)
+
+    # Teile Daten
+    X_train, X_val = X[:, indices[:n_train]], X[:, indices[n_train:]]
+    Y_train, Y_val = Y[:, indices[:n_train]], Y[:, indices[n_train:]]
+
+    return X_train, X_val, Y_train, Y_val
+
+
 def create_dataset_2d(data_type="moons", n_samples=500):
     """
         Erzeugt einen Datensatz mit Punkten in 2D

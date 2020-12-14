@@ -38,7 +38,7 @@ Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
 # plot_data_2d(X, Y)
 
 # X, Y = utils.create_dataset_2d()
-utils.plot_data_2d(X, Y)
+# utils.plot_data_2d(X, Y)
 
 
 # # Set min and max values and give it some padding
@@ -63,3 +63,10 @@ utils.plot_data_2d(X, Y)
 # y = np.argmax(Y, axis=0)
 # plt.scatter(X[0, :], X[1, :], c=y, cmap=plt.cm.Spectral)
 # plt.show()
+
+from src.utils import *
+X_train, X_val, Y_train, Y_val = get_train_val_split(X, Y, split=0.2)
+print(X_train)
+print(X_val)
+print(Y_train)
+print(Y_val)
