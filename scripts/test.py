@@ -22,6 +22,14 @@ from src.aktivierungsfunktionen import *
 # print(a)
 # print(np.transpose(a))
 
-a = np.array([[1, 4], [1, 3]])
-print(a)
-print(np.sum(a, axis=-1, keepdims=True))
+# a = np.array([[1, 4], [1, 3]])
+# print(a)
+# print(np.sum(a, axis=-1, keepdims=True))
+
+# Daten
+X = np.array([[0.1, 0.3, 0.1, 0.6, 0.4, 0.6, 0.5, 0.9, 0.4, 0.7],
+              [0.1, 0.4, 0.5, 0.9, 0.2, 0.3, 0.6, 0.2, 0.4, 0.6]])
+Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
+cost = - np.sum(np.multiply(Y, np.log(Y + 1e-10)) + np.multiply((1 - Y), np.log(1 - Y + 1e-10)))
+print(cost)

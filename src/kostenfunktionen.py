@@ -65,11 +65,7 @@ class BKE:
         """
 
         # m = Y.shape[1]
-        # cost = -1.0 / m * (np.dot(Y, np.transpose(np.log(AL))) + np.dot((1 - Y),
-        #                    np.transpose(np.log(1 - AL)))).sum()
-        # cost = np.squeeze(cost)
-
-        cost = - np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), (1 - np.log(AL))))
+        cost = - np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1 - Y), np.log(1 - AL)))
         cost = np.squeeze(cost)
 
         return cost

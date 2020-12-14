@@ -129,7 +129,6 @@ class ANN:
                 A: Aktivierungen aller Zwischenschichten
         """
 
-        # TODO ist das mit skalieren korrekt?
         for l in reversed(range(2, self.n_layers + 1)):
             self.parameters["W"+str(l)] = self.parameters["W"+str(l)] - \
                                           self.learning_rate * np.dot(delta[l], A[l-1].T)
@@ -150,7 +149,7 @@ class ANN:
                 batch_size: Mini-Batch Größe
 
             Returns:
-                costs: Liste mit Kosten im Verlauf des Trainings (leer, wenn plot_cost False ist)
+                history: Dictionary mit Kosten und Genauigkeit
         """
 
         self.learning_rate = learning_rate
@@ -170,8 +169,8 @@ class ANN:
             self._update_parameters(delta, A)
 
             # Berechne die Kosten und Genauigkeit über alle Daten mit den aktualisierten Parametern
-            # und gib diese auf der Konsole aus, wenn print_history=true
-            if (i % 100) == 0:
+            # und gib diese auf der Konsole aus
+            if (i % 1) == 0:
                 _, A = self._forward_propagation(X)
 
                 # Kosten
@@ -212,9 +211,8 @@ if __name__ == "__main__":
     history = nn.train(X_train, Y_train, BKE, learning_rate, epochs, batch_size)
 
     # plotte Kosten im Trainingsverlauf
-    iter_numbers = np.arange(0, epochs, 100)
-    plt.plot(iter_numbers, history["Kosten"])
-    plt.plot(iter_numbers, history["Genauigkeit"])
+    plt.plot(history["Kosten"])
+    plt.plot(history["Genauigkeit"])
     plt.xlabel("Durchlauf")
     plt.ylabel("Kosten / Genauigkeit")
     plt.show()
