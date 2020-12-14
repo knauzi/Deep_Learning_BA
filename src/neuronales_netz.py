@@ -5,7 +5,7 @@ from tqdm import trange
 from src.initialisierung import init_random_normal, init_xavier_uniform, init_he_uniform, init_zeros
 from src.aktivierungsfunktionen import Sigmoid, Relu, Softmax
 from src.kostenfunktionen import QK, BKE, KE
-from src.utils import get_one_hot
+from src.utils import get_one_hot, get_accuracy, plot_decision_boundary_2d
 
 
 class ANN:
@@ -159,18 +159,20 @@ class ANN:
         n_classes = X.shape[0]
         n_examples = X.shape[1]
 
-        # TODO support für mini batch hinzufügen
         for i in (t := trange(epochs)):
+
+            # Ziehen mit Zurücklegen
             sample = np.random.randint(n_examples, size=batch_size)
             x = X[:, sample]
             y = Y[:, sample]
+
             Z, A = self._forward_propagation(x)
             delta = self._backward_propagation(Z, A, y)
             self._update_parameters(delta, A)
 
             # Berechne die Kosten und Genauigkeit über alle Daten mit den aktualisierten Parametern
-            # und gib diese auf der Konsole aus
-            if (i % 1) == 0:
+            # und gib diese auf der Konsole aus; alle 10 Epochen
+            if (i % 1000) == 0:
                 _, A = self._forward_propagation(X)
 
                 # Kosten
@@ -179,8 +181,9 @@ class ANN:
 
                 # Genauigkeit
                 predictions = get_one_hot(np.argmax(A[self.n_layers], axis=0), n_classes)
-                accuracy = np.sum(np.array([np.array_equal(Y[:, j], predictions[:, j])
-                                            for j in range(n_examples)])) / n_examples
+                # accuracy = np.sum(np.array([np.array_equal(Y[:, j], predictions[:, j])
+                #                             for j in range(n_examples)])) / n_examples
+                accuracy = get_accuracy(Y, predictions)
                 accuracies.append(accuracy)
 
                 # gibt Kosten und Genauigkeit auf der Konsole aus
@@ -191,6 +194,22 @@ class ANN:
 
         return history
 
+    def predict(self, X):
+        """
+            Inferenz des neuronalen Netzes auf den Eingaben
+
+            Args:
+                X: Eingaben, Dimension (Anzahl Ausaben, Anzahl Datenpunkte)
+
+            Returns:
+                AL: Ausgaben des neuronalen Netzes, Dimension (Anzahl Ausgaben, Anzahl Datenpunkte)
+        """
+
+        A, _ = self._forward_propagation(X)
+        AL = A[self.n_layers]
+
+        return AL
+
     def save(self, output_path):
         pass
 
@@ -198,17 +217,17 @@ class ANN:
 if __name__ == "__main__":
 
     # Daten
-    X_train = np.array([[0.1, 0.3, 0.1, 0.6, 0.4, 0.6, 0.5, 0.9, 0.4, 0.7],
-                        [0.1, 0.4, 0.5, 0.9, 0.2, 0.3, 0.6, 0.2, 0.4, 0.6]])
-    Y_train = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
+    X = np.array([[0.1, 0.3, 0.1, 0.6, 0.4, 0.6, 0.5, 0.9, 0.4, 0.7],
+                  [0.1, 0.4, 0.5, 0.9, 0.2, 0.3, 0.6, 0.2, 0.4, 0.6]])
+    Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
 
     # Neuronales Netz
     learning_rate = 0.01
     epochs = 50000
-    batch_size = 2
-    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Sigmoid), initialisation="xavier")
-    history = nn.train(X_train, Y_train, BKE, learning_rate, epochs, batch_size)
+    batch_size = 10
+    nn = ANN((2, 2, 3, 2), (Sigmoid, Sigmoid, Sigmoid), initialisation="random_normal")
+    history = nn.train(X, Y, BKE, learning_rate, epochs, batch_size)
 
     # plotte Kosten im Trainingsverlauf
     plt.plot(history["Kosten"])
@@ -216,3 +235,6 @@ if __name__ == "__main__":
     plt.xlabel("Durchlauf")
     plt.ylabel("Kosten / Genauigkeit")
     plt.show()
+
+    # plotte Entscheidungsgrenze
+    plot_decision_boundary_2d(nn, X, Y)

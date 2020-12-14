@@ -20,7 +20,8 @@ class QK:
                 cost: Kosten (integer)
         """
 
-        cost = np.square(np.subtract(AL, Y)).mean()
+        # cost = np.square(np.subtract(AL, Y)).mean()
+        cost = np.sum(np.square(np.subtract(AL, Y)))
         cost = np.squeeze(cost)
 
         return cost

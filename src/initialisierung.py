@@ -22,9 +22,6 @@ def init_random_normal(layer_dims):
         parameters['W'+str(l+1)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * scale
         parameters['b'+str(l+1)] = np.random.randn(layer_dims[l], 1) * scale
 
-        print(parameters['W' + str(l + 1)])
-        print(parameters['b' + str(l + 1)])
-
     return parameters
 
 
@@ -97,7 +94,6 @@ def init_zeros(layer_dims):
     L = len(layer_dims)
 
     for l in range(1, L):
-        limit = np.sqrt(6. / layer_dims[l])
         parameters['W' + str(l + 1)] = np.zeros((layer_dims[l], layer_dims[l-1]))
         parameters['b' + str(l + 1)] = np.zeros((layer_dims[l], 1))
 
