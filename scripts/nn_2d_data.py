@@ -15,7 +15,8 @@ X_train, X_val, Y_train, Y_val = get_train_val_split(X, Y, split=split)
 learning_rate = 0.01
 epochs = 10000
 batch_size = 32
-nn = ANN((2, 10, 10, 2), (Relu, Relu, Softmax), initialisation="he")
+# nn = ANN((2, 10, 10, 2), (Relu, Relu, Softmax), initialisation="he")
+nn = ANN((2, 10, 10, 2), (Sigmoid, Sigmoid, Softmax), initialisation="xavier")
 history = nn.train(X_train, X_val, Y_train, Y_val, KE, learning_rate, epochs, batch_size)
 
 # plotte Kosten im Trainingsverlauf

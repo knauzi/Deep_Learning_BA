@@ -43,6 +43,8 @@ class ANN:
             self.parameters = init_he_uniform(layer_dims)
         elif initialisation == "zero":
             self.parameters = init_zeros(layer_dims)
+        elif initialisation == "constant":
+            self.parameters = init_constant(layer_dims)
         else:
             raise AttributeError("Unbekannte Initialisierungsmethode übergeben!")
 
