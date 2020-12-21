@@ -44,8 +44,8 @@ class Softmax:
     @staticmethod
     def forward(X):
         """ f(X) """
-        counter = np.exp(X)
-        denominator = np.sum(counter, axis=0)
+        counter = np.exp(X - np.max(X))
+        denominator = np.nansum(counter, axis=0)
         return np.divide(counter, denominator)
 
     @staticmethod

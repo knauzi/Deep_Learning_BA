@@ -20,8 +20,9 @@ class QK:
                 cost: Kosten (integer)
         """
 
-        cost = np.square(np.subtract(AL, Y)).mean()
-        # cost = np.sum(np.square(np.subtract(AL, Y)))
+        n = Y.shape[1]
+        cost = np.nansum(np.square(np.subtract(AL, Y))) / n
+        # cost = np.square(np.subtract(AL, Y)).mean()
         cost = np.squeeze(cost)
 
         return cost
@@ -64,9 +65,10 @@ class BKE:
                 cost: Kosten (integer)
         """
 
-        # m = Y.shape[1]
-        # cost = - np.sum(np.multiply(Y, np.log(AL + 1e-10)) + np.multiply((1 - Y), np.log(1 - AL + 1e-10)))
-        cost = - np.mean(np.multiply(Y, np.log(AL + 1e-10)) + np.multiply((1 - Y), np.log(1 - AL + 1e-10)))
+        n = Y.shape[1]
+        cost = - np.nansum(np.multiply(Y, np.log(AL + 1e-8))
+                           + np.multiply((1 - Y), np.log(1 - AL + 1e-8))) / n
+        # cost = - np.mean(np.multiply(Y, np.log(AL + 1e-10)) + np.multiply((1 - Y), np.log(1 - AL + 1e-10)))
         cost = np.squeeze(cost)
 
         return cost
@@ -111,8 +113,9 @@ class KE:
                 cost: Kosten (integer)
         """
 
-        # cost = - np.sum(np.multiply(Y, np.log(AL + 1e-10)))
-        cost = - np.mean(np.multiply(Y, np.log(AL + 1e-10)))
+        n = Y.shape[1]
+        cost = - np.nansum(np.multiply(Y, np.log(AL + 1e-8))) / n
+        # cost = - np.mean(np.multiply(Y, np.log(AL + 1e-10)))
         cost = np.squeeze(cost)
 
         return cost

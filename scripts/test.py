@@ -1,5 +1,5 @@
 import numpy as np
-from src.neuronales_netz import ANN
+from src.neuronales_netz import NeuralNetwork
 from src.aktivierungsfunktionen import *
 import src.utils as utils
 import matplotlib.pyplot as plt
@@ -35,6 +35,7 @@ X = np.array([[0.1, 0.3, 0.1, 0.6, 0.4, 0.6, 0.5, 0.9, 0.4, 0.7],
               [0.1, 0.4, 0.5, 0.9, 0.2, 0.3, 0.6, 0.2, 0.4, 0.6]])
 Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
               [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])
+print(Y.shape[1])
 # plot_data_2d(X, Y)
 
 # X, Y = utils.create_dataset_2d()
@@ -64,9 +65,14 @@ Y = np.array([[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
 # plt.scatter(X[0, :], X[1, :], c=y, cmap=plt.cm.Spectral)
 # plt.show()
 
-from src.utils import *
-X_train, X_val, Y_train, Y_val = get_train_val_split(X, Y, split=0.2)
-print(X_train)
-print(X_val)
-print(Y_train)
-print(Y_val)
+# from src.utils import *
+# X_train, X_val, Y_train, Y_val = get_train_val_split(X, Y, split=0.2)
+# print(X_train)
+# print(X_val)
+# print(Y_train)
+# print(Y_val)
+
+# print(Relu.__name__)
+# import os
+# output_path = os.path.dirname(os.path.abspath(__file__))
+# print(output_path)

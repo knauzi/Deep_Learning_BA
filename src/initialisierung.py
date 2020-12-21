@@ -19,8 +19,8 @@ def init_random_normal(layer_dims):
     scale = 0.5
 
     for l in range(1, L):
-        parameters['W'+str(l+1)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * scale
-        parameters['b'+str(l+1)] = np.random.randn(layer_dims[l], 1) * scale
+        parameters["W"+str(l+1)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * scale
+        parameters["b"+str(l+1)] = np.random.randn(layer_dims[l], 1) * scale
 
     return parameters
 
@@ -46,9 +46,9 @@ def init_xavier_uniform(layer_dims, sigmoid=True):
 
     for l in range(1, L):
         limit = np.sqrt(6. / (layer_dims[l-1] + layer_dims[l]))
-        parameters['W'+str(l+1)] = np.random.uniform(-limit, limit, (layer_dims[l], layer_dims[l-1])) \
+        parameters["W"+str(l+1)] = np.random.uniform(-limit, limit, (layer_dims[l], layer_dims[l-1])) \
                                    * scale
-        parameters['b'+str(l+1)] = np.zeros((layer_dims[l], 1))
+        parameters["b"+str(l+1)] = np.zeros((layer_dims[l], 1))
 
     return parameters
 
@@ -71,8 +71,8 @@ def init_he_uniform(layer_dims):
 
     for l in range(1, L):
         limit = np.sqrt(6. / layer_dims[l])
-        parameters['W' + str(l + 1)] = np.random.uniform(-limit, limit, (layer_dims[l], layer_dims[l - 1]))
-        parameters['b' + str(l + 1)] = np.zeros((layer_dims[l], 1))
+        parameters["W" + str(l + 1)] = np.random.uniform(-limit, limit, (layer_dims[l], layer_dims[l - 1]))
+        parameters["b" + str(l + 1)] = np.zeros((layer_dims[l], 1))
 
     return parameters
 
@@ -94,8 +94,8 @@ def init_zeros(layer_dims):
     L = len(layer_dims)
 
     for l in range(1, L):
-        parameters['W' + str(l + 1)] = np.zeros((layer_dims[l], layer_dims[l-1]))
-        parameters['b' + str(l + 1)] = np.zeros((layer_dims[l], 1))
+        parameters["W" + str(l + 1)] = np.zeros((layer_dims[l], layer_dims[l-1]))
+        parameters["b" + str(l + 1)] = np.zeros((layer_dims[l], 1))
 
     return parameters
 
@@ -117,7 +117,7 @@ def init_constant(layer_dims):
     L = len(layer_dims)
 
     for l in range(1, L):
-        parameters['W' + str(l + 1)] = np.ones((layer_dims[l], layer_dims[l-1]))
-        parameters['b' + str(l + 1)] = np.ones((layer_dims[l], 1))
+        parameters["W" + str(l + 1)] = np.ones((layer_dims[l], layer_dims[l-1]))
+        parameters["b" + str(l + 1)] = np.ones((layer_dims[l], 1))
 
     return parameters
